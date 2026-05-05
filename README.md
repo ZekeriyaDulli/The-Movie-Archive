@@ -197,6 +197,8 @@ users ──< user_ratings  >── shows
 users ──< watch_history >── shows
 ```
 
+![ER Diagram](db/ER-Diagram.png)
+
 Key constraints: composite primary keys on all join tables, `ON DELETE CASCADE` on all foreign keys, `UNIQUE(user_id, show_id)` on `user_ratings` and `watch_history`, `CHECK (rating BETWEEN 1 AND 10)`.
 
 ---
