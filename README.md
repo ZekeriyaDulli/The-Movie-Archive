@@ -2,10 +2,8 @@
 
 A full-stack web application for discovering, tracking, and rating movies and TV series. Users browse a curated catalogue, maintain personal watchlists, record watch history, and rate titles with written reviews. Administrators grow the catalogue via CSV upload and a background OMDb sync that enriches every title with metadata, posters, cast, and — for TV series — full season/episode breakdowns.
 
-> **Course:** Web Programming — Semester 6
+> **Course:** Software Architecture — Semester 6
 > **Stack:** FastAPI · MySQL · React 18 · Vite · Bootstrap 5
-
-**Live demo:** [swe-314-web-programming-project-1.vercel.app](https://swe-314-web-programming-project-1.vercel.app)
 
 ---
 
