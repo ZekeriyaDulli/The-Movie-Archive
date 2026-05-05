@@ -182,8 +182,15 @@ Password: admin.movie.archive
 
 ## Database Schema
 
-15 tables in a normalised relational model:
+16 tables in a normalised relational model:
 
+### Relational Database Design
+
+The full ER diagram is included in the repository (`db/ER-Diagram.mwb` — MySQL Workbench source, `db/ER-Diagram.png` — exported image):
+
+![ER Diagram](db/ER-Diagram.png)
+
+The schema has 16 tables in a normalised relational model with explicit primary keys, foreign keys, composite keys, unique constraints, and cascade rules:
 ```
 users ──< watchlists ──< watchlist_items >── shows
                                               │
@@ -196,8 +203,6 @@ users ──< watchlists ──< watchlist_items >── shows
 users ──< user_ratings  >── shows
 users ──< watch_history >── shows
 ```
-
-![ER Diagram](db/ER-Diagram.png)
 
 Key constraints: composite primary keys on all join tables, `ON DELETE CASCADE` on all foreign keys, `UNIQUE(user_id, show_id)` on `user_ratings` and `watch_history`, `CHECK (rating BETWEEN 1 AND 10)`.
 
