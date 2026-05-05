@@ -235,4 +235,3 @@ During sync, if a show has no `poster_url`, the backend extracts the `Poster` fi
 
 ---
 
-*See [REPORT.md](REPORT.md) for the full project report including detailed code examples for all Week 1–4 concepts.*
