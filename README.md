@@ -228,22 +228,4 @@ During sync, if a show has no `poster_url`, the backend extracts the `Poster` fi
 
 ---
 
----
-
-## Deployment
-
-The application is deployed on free-tier cloud services:
-
-| Service | Role | URL |
-|---------|------|-----|
-| Vercel | React frontend | [swe-314-web-programming-project-1.vercel.app](https://swe-314-web-programming-project-1.vercel.app) |
-| Railway | FastAPI backend | [swe314-web-programming-project-1-production.up.railway.app](https://swe314-web-programming-project-1-production.up.railway.app) |
-| Railway | MySQL database | Managed by Railway, same project |
-
-Poster images are proxied through the backend (`GET /poster/{imdb_id}`) so the OMDb API key is never exposed to the browser.
-
-For full deployment instructions see [DEPLOYMENT.md](DEPLOYMENT.md).
-
----
-
 *See [REPORT.md](REPORT.md) for the full project report including detailed code examples for all Week 1–4 concepts.*
