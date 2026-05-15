@@ -4,7 +4,7 @@ USE movie_archive;
 -- First insert base data from your original script
 INSERT INTO users (first_name, last_name, email, password_hash, created_at) VALUES
 ('Admin', '', 'admin@movie.archive.com', '$2a$12$wJo0H0/E/.g9jsuOJVhYWe7V3TuRkEf/NfQaIfJuNdkzwko5mb9Zi', '2018-04-12'),		-- admin password is "admin.movie.archive"
-('Alice', 'Johnson', 'alice.johnson@gmail.com', '$2a$12$zmbQQnls3o6XydFDERp0DO.1FY0IX5.4bDB3NJF57C7VhyLy9UgRu', '2021-04-12'), 	-- password for all users users is in the format "FirstnameLastName" ex "AliceJohnson"
+('Alice', 'Johnson', 'alice.johnson@gmail.com', '$2a$12$zmbQQnls3o6XydFDERp0DO.1FY0IX5.4bDB3NJF57C7VhyLy9UgRu', '2021-04-12'), 	-- password for all users is in the format "FirstnameLastName" ex "AliceJohnson"
 ('Michael', 'Brown', 'Michael.Brown@gmail.com', '$2a$12$WajEXIgUC21rUPBEpn.Yj.uZ44z9MMJdjym9VpjCN6l1W93aPT/cC', '2019-09-05'),
 ('Robert', 'Davis', 'Robert.Davis@gmail.com', '$2a$12$gtpJkEFwK/cVc18rcq8ypuwDz4RM/igxRF8OSCMyxFDY1yPRhYDau', '2023-01-30'),
 ('Sara', 'Lee', 'Sara.Lee@gmail.com', '$2a$12$cpzGd5IsC5fzBrp4r8ullewDSTtiz3UC.jg/TnKAejxBPBCV3PaVC', '2025-07-18'),
