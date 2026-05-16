@@ -28,6 +28,8 @@ class Show(SQLModel, table=True):
     imdb_votes: Optional[int] = Field(default=None)
     latest_air_date: Optional[date] = Field(default=None)
     sync_status: Optional[int] = Field(default=0)
+    latest_air_date: Optional[date] = Field(default=None)
+    sync_status: Optional[int] = Field(default=0)
     plot: Optional[str] = None
     poster_url: Optional[str] = Field(default=None, max_length=500)
     added_at: Optional[datetime] = None

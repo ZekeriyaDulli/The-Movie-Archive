@@ -752,7 +752,7 @@ def remove_tag_from_show(show_id: int, tag_id: int, session: Session) -> None:
     session.commit()
     if result.rowcount == 0:
         raise HTTPException(status_code=404, detail="Tag not found on this show.")
-
+    
 
 # ── External API (OMDb) ───────────────────────────────────────────────────────
 
@@ -1237,9 +1237,9 @@ def delete_show(show_id: int, session: Session) -> None:
         r[0] for r in session.execute(text("SHOW TABLES")).fetchall()
     }
     for tbl in ("show_genres", "show_directors", "show_actors", "show_tags",
-        "watchlist_items", "user_ratings", "watch_history"):
-            if tbl in existing:
-                session.execute(text(f"DELETE FROM {tbl} WHERE show_id = :sid"), {"sid": show_id})
+                "watchlist_items", "user_ratings", "watch_history"):
+        if tbl in existing:
+            session.execute(text(f"DELETE FROM {tbl} WHERE show_id = :sid"), {"sid": show_id})
 
     # 5. Delete the show itself
     result = session.execute(text("DELETE FROM shows WHERE show_id = :sid"), {"sid": show_id})
