@@ -207,6 +207,7 @@ def get_trending(session: Session, user_id: Optional[int] = None) -> list[dict]:
         SELECT
             s.show_id, s.imdb_id, s.show_type, s.title, s.release_year, s.duration_minutes,
             s.total_seasons, s.plot, s.imdb_rating, s.imdb_votes, s.poster_url, s.trailer_url, s.added_at,
+            s.total_seasons, s.plot, s.imdb_rating, s.imdb_votes, s.poster_url, s.trailer_url, s.added_at,
             ROUND(AVG(ur.rating), 2) AS platform_avg,
             COUNT(DISTINCT ur.user_id) AS rating_count,
             MAX(CASE WHEN wh.show_id IS NOT NULL THEN 1 ELSE 0 END) AS is_watched,
@@ -242,6 +243,7 @@ def get_latest(show_type: str, session: Session, user_id: Optional[int] = None) 
     sql = """
         SELECT
             s.show_id, s.imdb_id, s.show_type, s.title, s.release_year, s.duration_minutes,
+            s.total_seasons, s.plot, s.imdb_rating, s.imdb_votes, s.poster_url, s.trailer_url, s.added_at,
             s.total_seasons, s.plot, s.imdb_rating, s.imdb_votes, s.poster_url, s.trailer_url, s.added_at,
             ROUND(AVG(ur.rating), 2) AS platform_avg,
             COUNT(DISTINCT ur.user_id) AS rating_count,
@@ -993,6 +995,44 @@ def cleanup_unaired_episodes(session: Session) -> dict:
     }
 
 
+def cleanup_unaired_episodes(session: Session) -> dict:
+    """Delete episodes that haven't aired yet and seasons left empty after cleanup."""
+    from datetime import date as date_type
+    today = date_type.today()
+
+    # Delete episodes with no air_date or air_date in the future
+    ep_result = session.execute(
+        text("DELETE FROM episodes WHERE air_date IS NULL OR air_date > :today"),
+        {"today": today},
+    )
+    deleted_episodes = ep_result.rowcount
+
+    # Delete seasons that now have zero episodes
+    season_result = session.execute(
+        text("""
+            DELETE s FROM seasons s
+            LEFT JOIN episodes e ON e.season_id = s.season_id
+            WHERE e.episode_id IS NULL
+        """),
+    )
+    deleted_seasons = season_result.rowcount
+
+    # Update episode_count on remaining seasons
+    session.execute(
+        text("""
+            UPDATE seasons s
+            SET s.episode_count = (SELECT COUNT(*) FROM episodes e WHERE e.season_id = s.season_id)
+        """),
+    )
+
+    session.commit()
+    return {
+        "detail": f"Removed {deleted_episodes} unaired episodes and {deleted_seasons} empty seasons.",
+        "deleted_episodes": deleted_episodes,
+        "deleted_seasons": deleted_seasons,
+    }
+
+
 # ── Sync State ────────────────────────────────────────────────────────────────
 
 _sync_state: dict = {
@@ -1173,8 +1213,7 @@ def _apply_omdb_data(show: dict, api_data: dict, session: Session) -> None:
 
     session.commit()
 
-
-# ── CSV Upload ────────────────────────────────────────────────────────────────
+# ── Delete Shows ────────────────────────────────────────────────────────────────
 
 def delete_show(show_id: int, session: Session) -> None:
     """Delete a show and all related data (episodes, seasons, junction tables)."""
@@ -1198,9 +1237,9 @@ def delete_show(show_id: int, session: Session) -> None:
         r[0] for r in session.execute(text("SHOW TABLES")).fetchall()
     }
     for tbl in ("show_genres", "show_directors", "show_actors", "show_tags",
-                "watchlist_items", "user_ratings", "watch_history"):
-        if tbl in existing:
-            session.execute(text(f"DELETE FROM {tbl} WHERE show_id = :sid"), {"sid": show_id})
+        "watchlist_items", "user_ratings", "watch_history"):
+            if tbl in existing:
+                session.execute(text(f"DELETE FROM {tbl} WHERE show_id = :sid"), {"sid": show_id})
 
     # 5. Delete the show itself
     result = session.execute(text("DELETE FROM shows WHERE show_id = :sid"), {"sid": show_id})
@@ -1208,23 +1247,7 @@ def delete_show(show_id: int, session: Session) -> None:
         raise HTTPException(status_code=404, detail="Show not found.")
     session.commit()
 
-
-def add_single_show(imdb_id: str, session: Session) -> dict:
-    """Add a single show by IMDb ID using the same stored procedure as CSV upload."""
-    try:
-        session.execute(
-            text("CALL sp_insert_show_if_not_exists(:imdb_id, @was_inserted)"),
-            {"imdb_id": imdb_id},
-        )
-        was_inserted = session.execute(text("SELECT @was_inserted")).fetchone()[0]
-        session.commit()
-        if was_inserted == 1:
-            return {"detail": f"Show {imdb_id} added successfully.", "inserted": True}
-        return {"detail": f"Show {imdb_id} already exists.", "inserted": False}
-    except Exception as e:
-        session.rollback()
-        raise HTTPException(status_code=400, detail=f"Failed to add show: {e}")
-
+# ── Change Password ────────────────────────────────────────────────────────────────
 
 def change_password(user_id: int, current_password: str, new_password: str, session: Session) -> None:
     row = session.execute(
@@ -1242,6 +1265,7 @@ def change_password(user_id: int, current_password: str, new_password: str, sess
     )
     session.commit()
 
+# ── CSV Upload ────────────────────────────────────────────────────────────────
 
 def process_csv_upload(file_bytes: bytes, session: Session) -> dict:
     import csv
@@ -1279,3 +1303,19 @@ def process_csv_upload(file_bytes: bytes, session: Session) -> dict:
         raise HTTPException(status_code=400, detail="Failed to parse CSV file. Please check the format and try again.")
 
     return {"inserted": inserted, "skipped": skipped, "errors": errors}
+
+def add_single_show(imdb_id: str, session: Session) -> dict:
+    """Add a single show by IMDb ID using the same stored procedure as CSV upload."""
+    try:
+        session.execute(
+            text("CALL sp_insert_show_if_not_exists(:imdb_id, @was_inserted)"),
+            {"imdb_id": imdb_id},
+        )
+        was_inserted = session.execute(text("SELECT @was_inserted")).fetchone()[0]
+        session.commit()
+        if was_inserted == 1:
+            return {"detail": f"Show {imdb_id} added successfully.", "inserted": True}
+        return {"detail": f"Show {imdb_id} already exists.", "inserted": False}
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=400, detail=f"Failed to add show: {e}")
