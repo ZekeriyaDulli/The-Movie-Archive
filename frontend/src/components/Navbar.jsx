@@ -40,6 +40,9 @@ export default function Navbar() {
 
         {/* Collapsible menu */}
         <div className="collapse navbar-collapse" id="navMenu">
+          <div className="d-flex align-items-center gap-3 py-2 py-lg-0">
+            <Link to="/browse" className="btn btn-sm g-btn-ghost px-3" style={{ fontWeight: 600 }}>Browse</Link>
+          </div>
           <div className="ms-auto d-flex align-items-center gap-2 flex-wrap py-2 py-lg-0">
             {!isLoggedIn ? (
               <>
